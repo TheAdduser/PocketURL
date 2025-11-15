@@ -1,4 +1,4 @@
-name: Frontend (Static) - Build & Deploy to Render
+name: Frontend Deploy DEV
 
 on:
   push:

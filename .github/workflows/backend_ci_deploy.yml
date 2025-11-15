@@ -1,4 +1,4 @@
-name: Backend (Python/Flask) - CI & Trigger Render Deploy (DEV)
+name: Backend Deploy DEV
 
 on:
   push:
