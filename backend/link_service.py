@@ -17,4 +17,5 @@ def shorten(logn_url: str) -> str:
 
     return "".join(out)
 
-print(shorten('https://github.com'))
+if __name__ == '__main__':
+    print(shorten('https://github.com'))
