@@ -1,0 +1,11 @@
+CREATE TABLE Links (
+    ShortUrl VARCHAR(255) PRIMARY KEY,
+    LongUrl VARCHAR(255)
+);
+
+CREATE TABLE Clicks (
+    ShortUrl VARCHAR(255),
+    HostIP VARCHAR(15),
+    Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(ShortUrl) REFERENCES Links(ShortUrl)
+);
