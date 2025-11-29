@@ -1,66 +1,109 @@
-name: Backend Deploy DEV
+name: Backend CI/CD Pipeline
 
+# Wyzwalacze (Triggers)
 on:
   push:
     branches:
-      - dev # Uruchamia się tylko przy pushu do gałęzi 'dev'
+      - dev   # Uruchamia workflow przy pushu do gałęzi rozwojowej
+      - main  # Uruchamia workflow przy pushu do gałęzi produkcyjnej
   pull_request:
     branches:
-      - dev # Uruchamia się przy Pull Requestach do gałęzi 'dev'
+      - dev
+      - main
 
 jobs:
   # =======================================================
-  # JOB 1: TESTY (Continuous Integration)
-  # Weryfikuje kod Pythona przed rozpoczęciem deploymentu.
+  # JOB 1: CI_TESTS (Weryfikacja Jakości i Bezpieczeństwa Kodu)
+  # Uruchamiany jako pierwszy, aby upewnić się, że kod jest poprawny.
   # =======================================================
   ci_tests:
-    name: Run Python CI Tests
+    name: Run Python CI/Security Tests
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout Code
+        # Standardowa akcja GitHub, która pobiera kod z repozytorium do runnera
         uses: actions/checkout@v4
-
-      # --- Konfiguracja Pythona ---
+          
+      # --- Konfiguracja Pythona i Cache ---
       - name: Set up Python
+        # Ustawia środowisko Pythona 3.11 i aktywuje cachowanie zależności 'pip'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-          # Monitorowanie pliku zależności, aby przyspieszyć instalację
-          cache-dependency-path: backend/requirements.txt 
+          cache-dependency-path: backend/requirements.txt # Monitoruje ten plik, by przyspieszyć ponowne instalacje
           
-      - name: Install dependencies
+      # --- Instalacja Narzędzi ---
+      - name: Install dependencies and tools
         working-directory: ./backend
-        run: pip install -r requirements.txt
+        # Instaluje zależności projektu oraz narzędzia do analizy kodu: Flake8, Black, Safety
+        run: pip install -r requirements.txt flake8 black safety
         
-      # --- Krok Testowy ---
+      # --- Krok 1: Kontrola Formatowania ---
+      - name: Run Code Formatter Check (Black)
+        working-directory: ./backend
+        # Black sprawdza, czy kod jest zgodny ze standardami formatowania (opcja --check nie wprowadza zmian)
+        run: black . --check 
+        
+      # --- Krok 2: Kontrola Stylu/Linting ---
+      - name: Run Code Linter (Flake8)
+        working-directory: ./backend
+        # Flake8 sprawdza zgodność ze stylem PEP 8 i wyłapuje błędy logiczne/składniowe
+        run: flake8 . 
+        
+      # --- Krok 3: Skanowanie Bezpieczeństwa ---
+      - name: Check for known security vulnerabilities (Safety)
+        working-directory: ./backend
+        # Safety skanuje zależności z requirements.txt pod kątem znanych luk bezpieczeństwa
+        run: safety check -r requirements.txt
+        
+      # --- Krok 4: Testy Jednostkowe ---
       - name: Run Backend Tests (Pytest)
         working-directory: ./backend
+        # Uruchamia zdefiniowane testy Pytest, weryfikując poprawność działania kodu
         run: python -m pytest 
         
   # =======================================================
-  # JOB 2: DEPLOY (Trigger Render Hook)
-  # Uruchamiany tylko na gałęzi 'dev' po sukcesie testów.
+  # JOB 2: DEPLOY NA DEV (Deployment na środowisko deweloperskie)
   # =======================================================
-  deploy:
-    name: Trigger Render Deployment
+  deploy_dev:
+    name: Trigger Render Deployment (DEV)
     runs-on: ubuntu-latest
-    needs: ci_tests # Wymaga udanego przejścia testów z Joba 1
-    environment: dev # Przypisanie do środowiska 'dev'
+    needs: ci_tests # Wymaga, aby Job 1 (ci_tests) zakończył się sukcesem
+    environment: dev # Przypisuje przebieg do środowiska 'dev'
+    if: github.ref == 'refs/heads/dev' # Uruchamia się TYLKO dla pushy na gałąź 'dev'
     
     steps:
-      # --- Wywołanie Wdrożenia Render.com ---
-      - name: Setup Node.js (do curl)
-        # Instalujemy Node.js, ponieważ akcja 'curl' może być łatwiej dostępna
-        # przy użyciu tego runnera Node.
+      - name: Setup Node.js (dla curl)
+        # Instalacja środowiska Node.js (potrzebna do poprawnego działania runnera dla polecenia 'curl')
         uses: actions/setup-node@v4 
         with:
             node-version: '20' 
             
-      - name: Send Deploy Request to Render
-        # Używamy Hooka, aby poinformować Render, że ma pobrać kod z gałęzi 'dev' i zdeployować.
-        # Wartość jest pobierana z GitHub Secret.
-        run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK }}
-        env:
-          BACKEND_RENDER_HOOK: ${{ secrets.BACKEND_RENDER_HOOK }}
+      - name: Send Deploy Request to Render DEV
+        # Wysłanie żądania POST do Render.com, aby wywołać wdrożenie z gałęzi 'dev'
+        # Używa tajnego Hooka Render zdefiniowanego w sekretach GitHub
+        run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK_DEV }}
+
+  # =======================================================
+  # JOB 3: DEPLOY NA PROD (Deployment na środowisko produkcyjne)
+  # =======================================================
+  deploy_prod:
+    name: Trigger Render Deployment (PROD)
+    runs-on: ubuntu-latest
+    needs: ci_tests # Wymaga, aby Job 1 (ci_tests) zakończył się sukcesem
+    environment: prod # Przypisuje przebieg do środowiska 'prod'
+    if: github.ref == 'refs/heads/main' # Uruchamia się TYLKO dla pushy na gałąź 'main'
+    
+    steps:
+      - name: Setup Node.js (dla curl)
+        # Instalacja środowiska Node.js (potrzebna do poprawnego działania runnera dla polecenia 'curl')
+        uses: actions/setup-node@v4 
+        with:
+            node-version: '20' 
+            
+      - name: Send Deploy Request to Render PROD
+        # Wysłanie żądania POST do Render.com, aby wywołać wdrożenie z gałęzi 'main'
+        # Używa tajnego Hooka Render dla środowiska produkcyjnego
+        run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK_PROD }}
