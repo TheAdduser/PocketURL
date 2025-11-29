@@ -3,7 +3,7 @@ name: Backend CI/CD Pipeline
 on:
   push:
     branches:
-      - dev 
+      - dev
       - main
   pull_request:
     branches:
@@ -26,10 +26,24 @@ jobs:
           cache: 'pip'
           cache-dependency-path: backend/requirements.txt
           
+      - name: Show Python and Tool Versions
+        run: |
+          python --version
+          pip --version
+          flake8 --version
+          
       - name: Install dependencies and tools (Flake8, Black, Pytest)
         working-directory: ./backend
         run: pip install -r requirements.txt flake8 black pytest
         
+      - name: Check for TODO and FIXME markers
+        working-directory: ./backend
+        run: |
+          if grep -r -i 'todo\|fixme' ./src; then
+            echo "::error::Found TODO/FIXME markers in the code. Please resolve before merge."
+            exit 1
+          fi
+          
       - name: Run Code Formatter Check (Black)
         working-directory: ./backend
         run: black . --check 
@@ -37,13 +51,31 @@ jobs:
       - name: Run Code Linter (Flake8)
         working-directory: ./backend
         run: flake8 . 
+        
+      - name: Validate Render Deployment Hook Secrets
+        run: |
+          # Sprawdzenie Backendu
+          if [ -z "${{ secrets.BACKEND_RENDER_HOOK }}" ]; then
+            echo "::error::Secret BACKEND_RENDER_HOOK is missing or empty! Cannot deploy."
+            exit 1
+          fi
           
+          # Sprawdzenie Frontendu
+          if [ -z "${{ secrets.FRONTEND_RENDER_HOOK }}" ]; then
+            echo "::error::Secret FRONTEND_RENDER_HOOK is missing or empty! Cannot deploy."
+            exit 1
+          fi
+          echo "All necessary Render Hooks are present."
+            
+      - name: Run Backend Tests (Pytest)
+        working-directory: ./backend
+        run: python -m pytest 
+        
   deploy_dev:
     name: Trigger Render Deployment (DEV)
     runs-on: ubuntu-latest
     needs: ci_tests
     environment: dev
-    # if: github.ref == 'refs/heads/dev'
     
     steps:
       - name: Setup Node.js (dla curl)
@@ -51,21 +83,19 @@ jobs:
         with:
           node-version: '20' 
             
+      - name: Validate Render Deployment Hook Secret
+        run: |
+          if [ -z "${{ secrets.BACKEND_RENDER_HOOK }}" ]; then
+            echo "::error::Secret BACKEND_RENDER_HOOK is missing or empty! Cannot deploy."
+            exit 1
+          fi
+            
       - name: Send Deploy Request to Render DEV
         run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK }}
 
-  # deploy_prod:
-  #   name: Trigger Render Deployment (PROD)
-  #   runs-on: ubuntu-latest
-  #   needs: ci_tests
-  #   environment: prod
-  #   if: github.ref == 'refs/heads/main'
-    
-  #   steps:
-  #     - name: Setup Node.js (dla curl)
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20' 
-            
-  #     - name: Send Deploy Request to Render PROD
-  #       run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK_PROD }}
+      - name: Create Version Tag (Release)
+        if: github.event_name == 'push'
+        run: |
+          TAG_NAME="dev-release-$(date +%Y%m%d-%H%M%S)"
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
