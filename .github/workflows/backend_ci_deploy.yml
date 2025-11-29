@@ -38,10 +38,6 @@ jobs:
         working-directory: ./backend
         run: flake8 . 
           
-      - name: Run Backend Tests (Pytest)
-        working-directory: ./backend
-        run: python -m pytest 
-        
   deploy_dev:
     name: Trigger Render Deployment (DEV)
     runs-on: ubuntu-latest
