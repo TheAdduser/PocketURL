@@ -1,5 +1,7 @@
 import { Button } from "~/components/ui/button";
 import type { Route } from "./+types/home";
+import type React from "react";
+import { useState } from "react";
 
 export function meta({ }: Route.MetaArgs) {
   return [
@@ -9,16 +11,22 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 function InputBar() {
+  const [url, setURL] = useState("");
+
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setURL(e.target.value);
+  }
+
+  const handleClick = () => {
+  }
+
   return (
     <div className="border-2 mt-8 flex justify-between h-10 border-black xl:h-12 rounded-md shadow-xl">
-      <input type="text" placeholder="type or paste a link" className="p-1 w-full h-full bg-white rounded-l-md"/>
-      <button className="bg-pink-700 rounded-r-sm h-full text-sm font-bold p-1 xl:w-36">Shorten</button>
+      <input type="text" placeholder="type or paste a link" onChange={handleChange} className="p-1 w-full h-full bg-white rounded-l-md"/>
+      <button className="bg-pink-700 rounded-r-sm h-full text-sm font-bold p-1 xl:w-36" onClick={handleClick}>Shorten</button>
     </div>
   );
-}
-
-function Infographic() {
-
 }
 
 export default function Home() {
