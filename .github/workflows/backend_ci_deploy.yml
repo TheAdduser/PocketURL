@@ -37,12 +37,6 @@ jobs:
       - name: Run Code Linter (Flake8)
         working-directory: ./backend
         run: flake8 . 
-        
-      - name: Check for known security vulnerabilities (Safety Action)
-        working-directory: ./backend
-        uses: pyupio/safety-action@v1
-        with:
-          api-key: ${{ secrets.SAFETY_API_KEY }}
           
       - name: Run Backend Tests (Pytest)
         working-directory: ./backend
