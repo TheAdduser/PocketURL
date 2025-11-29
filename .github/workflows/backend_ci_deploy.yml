@@ -49,7 +49,6 @@ jobs:
       # --- Krok 3: Skanowanie Bezpieczeństwa (Safety Action) ---
       - name: Check for known security vulnerabilities (Safety Action)
         working-directory: ./backend
-        # POPRAWIONE WCIĘCIE: 'uses' i 'with' muszą być na tym samym poziomie co 'name'
         uses: pyupio/safety-action@v1
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
@@ -71,9 +70,9 @@ jobs:
     
     steps:
       - name: Setup Node.js (dla curl)
-        uses: actions/setup-node@v4 
+        uses: actions/setup-node@v4 # POPRAWIONE WCIĘCIE
         with:
-            node-version: '20' 
+          node-version: '20' 
             
       - name: Send Deploy Request to Render DEV
         run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK_DEV }}
@@ -90,9 +89,9 @@ jobs:
     
     steps:
       - name: Setup Node.js (dla curl)
-        uses: actions/setup-node@v4 
+        uses: actions/setup-node@v4 # POPRAWIONE WCIĘCIE
         with:
-            node-version: '20' 
+          node-version: '20' 
             
       - name: Send Deploy Request to Render PROD
         run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK_PROD }}
