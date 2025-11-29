@@ -14,7 +14,6 @@ on:
 jobs:
   # =======================================================
   # JOB 1: CI_TESTS (Weryfikacja Jakości i Bezpieczeństwa Kodu)
-  # Uruchamiany jako pierwszy, aby upewnić się, że kod jest poprawny.
   # =======================================================
   ci_tests:
     name: Run Python CI/Security Tests
@@ -22,50 +21,42 @@ jobs:
     
     steps:
       - name: Checkout Code
-        # Standardowa akcja GitHub, która pobiera kod z repozytorium do runnera
         uses: actions/checkout@v4
           
       # --- Konfiguracja Pythona i Cache ---
       - name: Set up Python
-        # Ustawia środowisko Pythona 3.11 i aktywuje cachowanie zależności 'pip'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: backend/requirements.txt # Monitoruje ten plik, by przyspieszyć ponowne instalacje
+          cache-dependency-path: backend/requirements.txt
           
       # --- Instalacja Narzędzi ---
       - name: Install dependencies and tools (Flake8, Black, Pytest)
         working-directory: ./backend
-        # Instaluje zależności projektu oraz narzędzia do analizy kodu
         run: pip install -r requirements.txt flake8 black pytest
         
       # --- Krok 1: Kontrola Formatowania ---
       - name: Run Code Formatter Check (Black)
         working-directory: ./backend
-        # Black sprawdza, czy kod jest zgodny ze standardami formatowania (opcja --check nie wprowadza zmian)
         run: black . --check 
         
       # --- Krok 2: Kontrola Stylu/Linting ---
       - name: Run Code Linter (Flake8)
         working-directory: ./backend
-        # Flake8 sprawdza zgodność ze stylem PEP 8 i wyłapuje błędy logiczne/składniowe
         run: flake8 . 
         
       # --- Krok 3: Skanowanie Bezpieczeństwa (Safety Action) ---
-      # Używa dedykowanej akcji GitHub, która automatycznie uwierzytelnia się kluczem API
       - name: Check for known security vulnerabilities (Safety Action)
         working-directory: ./backend
-        # Akcja pyupio/safety-action wymaga klucza API i automatycznie odczytuje requirements.txt
+        # POPRAWIONE WCIĘCIE: 'uses' i 'with' muszą być na tym samym poziomie co 'name'
         uses: pyupio/safety-action@v1
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
-          # Akcja szuka pliku requirements.txt w 'working-directory'
           
       # --- Krok 4: Testy Jednostkowe ---
       - name: Run Backend Tests (Pytest)
         working-directory: ./backend
-        # Uruchamia zdefiniowane testy Pytest, weryfikując poprawność działania kodu
         run: python -m pytest 
         
   # =======================================================
@@ -74,20 +65,17 @@ jobs:
   deploy_dev:
     name: Trigger Render Deployment (DEV)
     runs-on: ubuntu-latest
-    needs: ci_tests # Wymaga, aby Job 1 (ci_tests) zakończył się sukcesem
-    environment: dev # Przypisuje przebieg do środowiska 'dev'
-    if: github.ref == 'refs/heads/dev' # Uruchamia się TYLKO dla pushy na gałąź 'dev'
+    needs: ci_tests
+    environment: dev
+    if: github.ref == 'refs/heads/dev'
     
     steps:
       - name: Setup Node.js (dla curl)
-        # Instalacja środowiska Node.js (potrzebna do poprawnego działania runnera dla polecenia 'curl')
         uses: actions/setup-node@v4 
         with:
             node-version: '20' 
             
       - name: Send Deploy Request to Render DEV
-        # Wysłanie żądania POST do Render.com, aby wywołać wdrożenie z gałęzi 'dev'
-        # Używa tajnego Hooka Render zdefiniowanego w sekretach GitHub
         run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK_DEV }}
 
   # =======================================================
@@ -96,18 +84,15 @@ jobs:
   deploy_prod:
     name: Trigger Render Deployment (PROD)
     runs-on: ubuntu-latest
-    needs: ci_tests # Wymaga, aby Job 1 (ci_tests) zakończył się sukcesem
-    environment: prod # Przypisuje przebieg do środowiska 'prod'
-    if: github.ref == 'refs/heads/main' # Uruchamia się TYLKO dla pushy na gałąź 'main'
+    needs: ci_tests
+    environment: prod
+    if: github.ref == 'refs/heads/main'
     
     steps:
       - name: Setup Node.js (dla curl)
-        # Instalacja środowiska Node.js (potrzebna do poprawnego działania runnera dla polecenia 'curl')
         uses: actions/setup-node@v4 
         with:
             node-version: '20' 
             
       - name: Send Deploy Request to Render PROD
-        # Wysłanie żądania POST do Render.com, aby wywołać wdrożenie z gałęzi 'main'
-        # Używa tajnego Hooka Render dla środowiska produkcyjnego
         run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK_PROD }}
