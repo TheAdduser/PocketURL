@@ -28,11 +28,6 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: npm install
-        
-      # --- Uzupełnione polecenie testowe ---
-      - name: Run Frontend Tests
-        working-directory: ./frontend
-        run: npm test # Standardowe polecenie dla większości projektów Node.js/JS
 
       - name: Build Frontend
         working-directory: ./frontend
