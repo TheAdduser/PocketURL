@@ -35,10 +35,10 @@ jobs:
           cache-dependency-path: backend/requirements.txt # Monitoruje ten plik, by przyspieszyć ponowne instalacje
           
       # --- Instalacja Narzędzi ---
-      - name: Install dependencies and tools
+      - name: Install dependencies and tools (Flake8, Black, Pytest)
         working-directory: ./backend
-        # Instaluje zależności projektu oraz narzędzia do analizy kodu: Flake8, Black, Safety
-        run: pip install -r requirements.txt flake8 black safety
+        # Instaluje zależności projektu oraz narzędzia do analizy kodu
+        run: pip install -r requirements.txt flake8 black pytest
         
       # --- Krok 1: Kontrola Formatowania ---
       - name: Run Code Formatter Check (Black)
@@ -52,12 +52,16 @@ jobs:
         # Flake8 sprawdza zgodność ze stylem PEP 8 i wyłapuje błędy logiczne/składniowe
         run: flake8 . 
         
-      # --- Krok 3: Skanowanie Bezpieczeństwa ---
-      - name: Check for known security vulnerabilities (Safety)
+      # --- Krok 3: Skanowanie Bezpieczeństwa (Safety Action) ---
+      # Używa dedykowanej akcji GitHub, która automatycznie uwierzytelnia się kluczem API
+      - name: Check for known security vulnerabilities (Safety Action)
         working-directory: ./backend
-        # Safety skanuje zależności z requirements.txt pod kątem znanych luk bezpieczeństwa
-        run: safety scan -r requirements.txt
-        
+        # Akcja pyupio/safety-action wymaga klucza API i automatycznie odczytuje requirements.txt
+        uses: pyupio/safety-action@v1
+        with:
+          api-key: ${{ secrets.SAFETY_API_KEY }}
+          # Akcja szuka pliku requirements.txt w 'working-directory'
+          
       # --- Krok 4: Testy Jednostkowe ---
       - name: Run Backend Tests (Pytest)
         working-directory: ./backend
