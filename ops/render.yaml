@@ -17,6 +17,7 @@ projects:
                 value: 3.14.0
               - key: CORS_ALLOW_ALL
                 value: "true"
+              - key: DB_CONNECTION_STRING
 
           - type: web
             name: pocket-url-frontend-dev

@@ -4,7 +4,7 @@ from dotenv import load_dotenv, dotenv_values
 from sqlalchemy import create_engine
 import sqlalchemy as db
 from sqlalchemy.sql import func
-from link_service import shorten
+from backend.link_service import shorten
 
 load_dotenv()
 config = dotenv_values(".env")
