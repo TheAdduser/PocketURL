@@ -56,7 +56,7 @@ jobs:
       - name: Check for known security vulnerabilities (Safety)
         working-directory: ./backend
         # Safety skanuje zależności z requirements.txt pod kątem znanych luk bezpieczeństwa
-        run: safety check -r requirements.txt
+        run: safety scan -r requirements.txt
         
       # --- Krok 4: Testy Jednostkowe ---
       - name: Run Backend Tests (Pytest)
