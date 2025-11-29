@@ -52,7 +52,7 @@ jobs:
           node-version: '20' 
             
       - name: Send Deploy Request to Render DEV
-        run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK_DEV }}
+        run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK }}
 
   # deploy_prod:
   #   name: Trigger Render Deployment (PROD)
