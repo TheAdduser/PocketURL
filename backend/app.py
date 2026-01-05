@@ -9,7 +9,7 @@ from .services.link_service import shorten
 load_dotenv()
 config = dotenv_values(".env")
 
-connection_string = config["DB_CONNECTION_STRING"]
+connection_string = os.getenv("DB_CONNECTION_STRING")
 print(connection_string)
 
 # from .config import Config
