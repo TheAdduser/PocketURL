@@ -8,7 +8,7 @@ projects:
             name: pocket-url-backend-dev
             runtime: python
             repo: https://github.com/TheAdduser/PocketURL
-            branch: feature/render-deploy-skibidi
+            branch: dev
             buildCommand: pip install -r backend/requirements.txt
             startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT backend.app:app
             healthCheckPath: /health
