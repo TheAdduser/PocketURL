@@ -40,7 +40,7 @@ def create_app() -> Flask:
     engine = create_engine(connection_string, echo=True)
     metadata_obj.create_all(engine)
 
-    @app.get("/hello")
+    @app.get("/health")
     def hello_world():
         return jsonify({"status": "ok"}), 200
 
