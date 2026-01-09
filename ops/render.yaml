@@ -25,7 +25,7 @@ projects:
             repo: https://github.com/TheAdduser/PocketURL
             branch: dev
             buildCommand: cd frontend && npm install && npm run build
-            startCommand: npx react-router-serve frontend/build/server/index.js
+            startCommand: HOST=0.0.0.0 npx react-router-serve frontend/build/server/index.js
             envVars:
               - key: VITE_API_BASE_URL_DEV
                 value: https://<backend-dev-host>
