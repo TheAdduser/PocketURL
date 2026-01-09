@@ -4,6 +4,8 @@ import type React from "react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { API_URL, FRONTEND_URL } from "~/constants";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -12,19 +14,21 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-const API_URL = "https://pocket-url-backend-dev.onrender.com";
 
 
 function InputBar() {
   const [url, setURL] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setURL(e.target.value);
   };
 
   const {mutate} = useMutation({
-    mutationFn: (url: string) => {
-      return fetch(`${API_URL}/link`, {
+    mutationFn: async (url: string) => {
+      console.log('abc')
+      setIsLoading(true);
+      const req = await fetch(`${API_URL}/link`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,11 +37,35 @@ function InputBar() {
           url,
         })
       });
+      if (!req.ok) {
+        throw new Error("Request failed");
+      }
+      
+      const body = await req.json();
+      return body.shortened;
+    },
+    onError: () => {
+      setIsLoading(false);
+      toast.error("Something went wrong");
+    },
+    onSuccess: async (shortened: string) => {
+      setIsLoading(false);
+      setURL("");
+      toast(`New shortened url created: ${shortened}`, {
+        action: {
+          label: "Copy",
+          onClick: () => {
+            navigator.clipboard.writeText(`${FRONTEND_URL}/${shortened}`);
+          }
+        }
+      })
     }
   });
 
   const handleClick = () => {
-    mutate(url);
+    if (!isLoading) {
+      mutate(url);
+    }
   };
 
   return (
@@ -46,10 +74,11 @@ function InputBar() {
         type="text"
         placeholder="type or paste a link"
         onChange={handleChange}
+        value={url}
         className="p-1 w-full h-full bg-white rounded-l-md text-black"
       />
       <button
-        className="bg-pink-700 rounded-r-sm h-full text-sm font-bold p-1 xl:w-36"
+        className={`rounded-r-sm h-full text-sm font-bold p-1 xl:w-36 ${isLoading ? "cursor-not-allowed bg-pink-400 text-gray-300" : "bg-pink-700 cursor-pointer"}`}
         onClick={handleClick}
       >
         Shorten
