@@ -20,12 +20,18 @@ projects:
               - key: DB_CONNECTION_STRING
 
           - type: web
+            plan: free
+            runtime: node
             name: pocket-url-frontend-dev
-            runtime: static
             repo: https://github.com/TheAdduser/PocketURL
             branch: dev
-            buildCommand: cd frontend && npm install && npm run build
-            startCommand: HOST=0.0.0.0 npx react-router-serve frontend/build/server/index.js
+            buildCommand: |
+              cd frontend
+              npm install
+              npm run build
+            startCommand: |
+              cd frontend
+              npm run start
             envVars:
               - key: VITE_API_BASE_URL_DEV
                 value: https://<backend-dev-host>
