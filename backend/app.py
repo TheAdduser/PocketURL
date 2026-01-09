@@ -12,8 +12,9 @@ config = dotenv_values(".env")
 connection_string = config["DB_CONNECTION_STRING"]
 print(connection_string)
 
-# from .config import Config
+ELEMENTS_PER_PAGE = 10
 
+# from .config import Config
 
 def create_app() -> Flask:
     # cfg = Config.get_instance()
@@ -73,6 +74,45 @@ def create_app() -> Flask:
             conn.commit()
 
         return jsonify({"status": "ok", "shortened": shortened}), 200
+
+
+    @app.get("/links")
+    def get_links():
+        try:
+            page = int(request.args.get("page", 1))
+        except ValueError:
+            return jsonify({"error": "Page parameter must be an integer"}), 400
+
+        if page < 1:
+            return jsonify({"error": "Page number must be a positive integer"}), 400
+
+        offset = (page - 1) * ELEMENTS_PER_PAGE
+
+        links_total_count_statement = db.select(db.func.count()).select_from(links)
+
+        get_links_page_statement = (
+            db.select(links, clicks)
+            .join(clicks, links.c.ShortUrl == clicks.c.ShortUrl, isouter=True)
+            .offset(offset)
+            .limit(ELEMENTS_PER_PAGE)
+        )
+
+        with engine.connect() as conn:
+            links_total_count = conn.execute(links_total_count_statement).scalar()
+
+            if links_total_count is None:
+                return jsonify({"status": "Not found"}), 404
+            
+            result = conn.execute(get_links_page_statement).mappings().all()
+
+            if result is None:
+                return jsonify({"status": "Not found"}), 404
+
+        return jsonify({
+            "status": "ok",
+            "links_total_count": links_total_count,
+            "records": result
+        })
 
     return app
 
