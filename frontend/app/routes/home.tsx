@@ -3,6 +3,7 @@ import type { Route } from "./+types/home";
 import type React from "react";
 import { useState } from "react";
 import { Link } from "react-router";
+import { useMutation } from "@tanstack/react-query";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,6 +12,9 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+const API_URL = "https://pocket-url-backend-dev.onrender.com";
+
+
 function InputBar() {
   const [url, setURL] = useState("");
 
@@ -18,7 +22,23 @@ function InputBar() {
     setURL(e.target.value);
   };
 
-  const handleClick = () => {};
+  const {mutate} = useMutation({
+    mutationFn: (url: string) => {
+      return fetch(`${API_URL}/link`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url,
+        })
+      });
+    }
+  });
+
+  const handleClick = () => {
+    mutate(url);
+  };
 
   return (
     <div className="border-2 mt-8 flex justify-between h-10 border-black xl:h-12 rounded-md shadow-xl">
@@ -26,7 +46,7 @@ function InputBar() {
         type="text"
         placeholder="type or paste a link"
         onChange={handleChange}
-        className="p-1 w-full h-full bg-white rounded-l-md"
+        className="p-1 w-full h-full bg-white rounded-l-md text-black"
       />
       <button
         className="bg-pink-700 rounded-r-sm h-full text-sm font-bold p-1 xl:w-36"

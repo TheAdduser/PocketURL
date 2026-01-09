@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 import sqlalchemy as db
 from sqlalchemy.sql import func
 from .services.link_service import shorten
+from flask_cors import CORS
 
 load_dotenv()
 config = dotenv_values(".env")
@@ -19,6 +20,8 @@ def create_app() -> Flask:
     # cfg = Config.get_instance()
 
     app = Flask(__name__)
+
+    CORS(app)
 
     metadata_obj = db.MetaData()
 
