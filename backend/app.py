@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 import sqlalchemy as db
 from sqlalchemy.sql import func
 from .services.link_service import shorten
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 
 load_dotenv()
 config = dotenv_values(".env")
