@@ -1,0 +1,43 @@
+name: Frontend Deploy DEV
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    name: Build & Trigger Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json # Zakładamy, że frontend jest w katalogu 'frontend'
+          
+      # --- Krok 1: Testowanie i Kompilacja ---
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        # Użyj polecenia build dla Twojego frameworka (React/Vue/itp.)
+        run: npm run build 
+        
+      # --- Krok 2: Wdrożenie (Trigger Render Hook) ---
+      # Uruchom tylko po udanym buildzie i tylko z gałęzi 'main'
+      - name: Trigger Render Static Site Deployment
+        if: github.ref == 'refs/heads/main'
+        run: curl -X POST ${{ secrets.FRONTEND_RENDER_HOOK }}
+        env:
+          FRONTEND_RENDER_HOOK: ${{ secrets.FRONTEND_RENDER_HOOK }}

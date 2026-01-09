@@ -17,6 +17,7 @@ projects:
                 value: 3.14.0
               - key: CORS_ALLOW_ALL
                 value: "true"
+              - key: DB_CONNECTION_STRING
 
           - type: web
             name: pocket-url-frontend-dev
@@ -24,7 +25,7 @@ projects:
             repo: https://github.com/TheAdduser/PocketURL
             branch: dev
             buildCommand: cd frontend && npm install && npm run build
-            staticPublishPath: frontend/dist
+            startCommand: npx react-router-serve frontend/build/server/index.js
             envVars:
               - key: VITE_API_BASE_URL_DEV
                 value: https://<backend-dev-host>
