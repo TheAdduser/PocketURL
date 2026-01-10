@@ -11,7 +11,6 @@ load_dotenv()
 config = dotenv_values(".env")
 
 connection_string = os.getenv("DB_CONNECTION_STRING")
-print(connection_string)
 
 ELEMENTS_PER_PAGE = 10
 
@@ -43,6 +42,7 @@ def create_app() -> Flask:
     )
 
     engine = create_engine(connection_string, echo=True)
+
     metadata_obj.create_all(engine)
 
     @app.get("/health")

@@ -11,6 +11,26 @@ on:
       - main
 
 jobs:
+  smoke_tests:
+    name: Run Smoke Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+      
+      - name: Run smoke test
+        env:
+          DB_STRING: ${{ secrets.test_db }}
+        run: bash ops/smoke.sh
+      
+
   ci_tests:
     name: Run Python CI/Security Tests
     runs-on: ubuntu-latest
