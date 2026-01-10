@@ -15,8 +15,7 @@ export PYTHONPATH="$PROJECT_ROOT"
 PORT=${PORT:-5001}
 HOST=127.0.0.1
 
-export TEST="TRUE"
-export TEST_DB_CONNECTION_STRING = $1
+export DB_CONNECTION_STRING = $1
 
 # Start app in background
 ( gunicorn -w 1 -b "$HOST:$PORT" backend.app:app >/tmp/backend_smoke.log 2>&1 ) &

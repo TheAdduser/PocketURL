@@ -11,9 +11,6 @@ load_dotenv()
 config = dotenv_values(".env")
 
 connection_string = os.getenv("DB_CONNECTION_STRING")
-test_connection_string = os.getenv("TEST_DB_CONNECTION_STRING")
-is_test = os.getenv("TEST") == "TRUE"
-print(connection_string)
 
 ELEMENTS_PER_PAGE = 10
 
@@ -44,11 +41,7 @@ def create_app() -> Flask:
         db.Column("Timestamp", db.DateTime(timezone=False), server_default=func.now()),
     )
 
-    if is_test:
-        print("TEST DEBUG")
-        engine = create_engine(test_connection_string, echo=True)
-    else:
-        engine = create_engine(connection_string, echo=True)
+    engine = create_engine(connection_string, echo=True)
 
     metadata_obj.create_all(engine)
 
