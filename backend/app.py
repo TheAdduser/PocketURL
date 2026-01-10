@@ -94,9 +94,13 @@ def create_app() -> Flask:
         links_total_count_statement = db.select(db.func.count()).select_from(links)
 
         get_links_page_statement = (
-            db.select(links, clicks)
+            db.select(
+                links.c.ShortUrl,
+                links.c.LongUrl,
+                func.count(links.c.ShortUrl).label("total_count"))
             .join(clicks, links.c.ShortUrl == clicks.c.ShortUrl, isouter=True)
             .offset(offset)
+            .groupby(links.c.ShortUrl)
             .limit(ELEMENTS_PER_PAGE)
         )
 
