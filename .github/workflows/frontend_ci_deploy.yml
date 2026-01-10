@@ -39,7 +39,7 @@ jobs:
       # --- Krok 2: Wdrożenie (Trigger Render Hook) ---
       # Uruchom tylko po udanym buildzie i tylko z gałęzi 'main'
       - name: Trigger Render Static Site Deployment
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
         run: curl -X POST ${{ secrets.FRONTEND_RENDER_HOOK }}
         env:
           FRONTEND_RENDER_HOOK: ${{ secrets.FRONTEND_RENDER_HOOK }}
