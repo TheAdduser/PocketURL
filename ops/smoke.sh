@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # Simple smoke test: start the app and hit /health and /api/v1/password
-BACKEND_DIR=$(pwd)
+CURR_DIR=$(pwd)
+BACKEND_DIR=$(cd "$CURR_DIR/.." && pwd)
 PROJECT_ROOT=$(cd "$BACKEND_DIR/.." && pwd)
 echo $BACKEND_DIR
 echo $PROJECT_ROOT
