@@ -75,7 +75,6 @@ def create_app() -> Flask:
 
         return jsonify({"status": "ok", "shortened": shortened}), 200
 
-
     @app.get("/links")
     def get_links():
         try:
@@ -115,7 +114,6 @@ def create_app() -> Flask:
         })
 
     return app
-
 
 app = create_app()
 
