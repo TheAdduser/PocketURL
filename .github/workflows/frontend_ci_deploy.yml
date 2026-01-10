@@ -24,20 +24,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json # Zakładamy, że frontend jest w katalogu 'frontend'
+          cache-dependency-path: frontend/package-lock.json
           
-      # --- Krok 1: Testowanie i Kompilacja ---
       - name: Install dependencies
         working-directory: ./frontend
         run: npm install
 
       - name: Build Frontend
         working-directory: ./frontend
-        # Użyj polecenia build dla Twojego frameworka (React/Vue/itp.)
         run: npm run build 
         
-      # --- Krok 2: Wdrożenie (Trigger Render Hook) ---
-      # Uruchom tylko po udanym buildzie i tylko z gałęzi 'main'
       - name: Trigger Render Static Site Deployment
         if: github.ref == 'refs/heads/main'
         run: curl -X POST ${{ secrets.FRONTEND_RENDER_HOOK }}
