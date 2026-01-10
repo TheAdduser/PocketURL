@@ -1,25 +1,14 @@
-from flask import Flask, jsonify, request, redirect
-import os
-from dotenv import load_dotenv, dotenv_values
-from sqlalchemy import create_engine
 import sqlalchemy as db
+from flask import Flask, jsonify, request, redirect
+from sqlalchemy import create_engine
 from sqlalchemy.sql import func
 from .services.link_service import shorten
 from flask_cors import CORS
-
-load_dotenv()
-config = dotenv_values(".env")
-
-connection_string = os.getenv("DB_CONNECTION_STRING")
-print(connection_string)
-
-ELEMENTS_PER_PAGE = 10
-
-# from .config import Config
+from .config import Config
 
 
 def create_app() -> Flask:
-    # cfg = Config.get_instance()
+    cfg = Config.get_instance()
 
     app = Flask(__name__)
 
@@ -42,7 +31,7 @@ def create_app() -> Flask:
         db.Column("Timestamp", db.DateTime(timezone=False), server_default=func.now()),
     )
 
-    engine = create_engine(connection_string, echo=True)
+    engine = create_engine(cfg.connection_string, echo=True)
     metadata_obj.create_all(engine)
 
     @app.get("/health")
@@ -89,7 +78,7 @@ def create_app() -> Flask:
         if page < 1:
             return jsonify({"error": "Page number must be a positive integer"}), 400
 
-        offset = (page - 1) * ELEMENTS_PER_PAGE
+        offset = (page - 1) * cfg.ELEMENTS_PER_PAGE
 
         links_total_count_statement = db.select(db.func.count()).select_from(links)
 
@@ -102,7 +91,7 @@ def create_app() -> Flask:
             .join(clicks, links.c.ShortUrl == clicks.c.ShortUrl, isouter=True)
             .offset(offset)
             .groupby(links.c.ShortUrl)
-            .limit(ELEMENTS_PER_PAGE)
+            .limit(cfg.ELEMENTS_PER_PAGE)
         )
 
         with engine.connect() as conn:
@@ -127,6 +116,5 @@ def create_app() -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    # cfg = Config.get_instance()
-    port = int(os.getenv("PORT", 8000))
-    app.run(host="127.0.0.1", port=port, debug=True)
+    cfg = Config.get_instance()
+    app.run(host="127.0.0.1", port=cfg.port, debug=True)
