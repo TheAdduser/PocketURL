@@ -16,6 +16,7 @@ ELEMENTS_PER_PAGE = 10
 
 # from .config import Config
 
+
 def create_app() -> Flask:
     # cfg = Config.get_instance()
 
@@ -101,19 +102,18 @@ def create_app() -> Flask:
 
             if links_total_count is None:
                 return jsonify({"status": "Not found"}), 404
-            
+
             result = conn.execute(get_links_page_statement).mappings().all()
 
             if result is None:
                 return jsonify({"status": "Not found"}), 404
 
-        return jsonify({
-            "status": "ok",
-            "links_total_count": links_total_count,
-            "records": result
-        })
+        return jsonify(
+            {"status": "ok", "links_total_count": links_total_count, "records": result}
+        )
 
     return app
+
 
 app = create_app()
 
