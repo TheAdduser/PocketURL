@@ -18,7 +18,7 @@ projects:
               - key: CORS_ALLOW_ALL
                 value: "true"
               - key: DB_CONNECTION_STRING
-                value: ${{ secrets.db_string }}
+                value: ${{ secrets.DB_STRING }}
 
 
           - type: web
