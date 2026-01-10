@@ -7,6 +7,7 @@ from .services.link_service import shorten
 from flask_cors import CORS
 from .config import Config
 
+
 def create_app() -> Flask:
     cfg = Config.get_instance()
 

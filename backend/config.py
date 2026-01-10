@@ -1,6 +1,7 @@
 import os
 from .decorators import singleton
 
+
 @singleton
 class Config:
     """Application configuration as a Singleton accessible via Config.get_instance()."""
