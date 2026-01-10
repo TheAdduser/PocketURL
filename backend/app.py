@@ -1,5 +1,4 @@
 import sqlalchemy as db
-import os
 from flask import Flask, jsonify, request, redirect
 from sqlalchemy import create_engine
 from sqlalchemy.sql import func
