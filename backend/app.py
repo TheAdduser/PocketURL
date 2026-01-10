@@ -90,7 +90,7 @@ def create_app() -> Flask:
             )
             .join(clicks, links.c.ShortUrl == clicks.c.ShortUrl, isouter=True)
             .offset(offset)
-            .groupby(links.c.ShortUrl)
+            .group_by(links.c.ShortUrl)
             .limit(cfg.ELEMENTS_PER_PAGE)
         )
 
