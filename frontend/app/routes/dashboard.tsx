@@ -2,44 +2,47 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Copy,
   CornerDownRight,
+  Globe,
   LoaderIcon,
   MousePointerClickIcon,
 } from "lucide-react";
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import CustomPagination from "~/components/CustomPagination";
+import { API_URL } from "~/constants";
 
-const mockData = [
-  {
-    shortLink: "498c7b11",
-    longLink: "https://github.com",
-    clicks: 4,
-    timestamp: new Date("11.29.2025"),
-  },
-  {
-    shortLink: "139cy8h3",
-    longLink: "https://google.com",
-    clicks: 16,
-    timestamp: new Date("11.28.2025"),
-  },
-  {
-    shortLink: "1249c7nr",
-    longLink: "http://youtube.com",
-    clicks: 0,
-    timestamp: new Date("11.20.2025"),
-  },
-  {
-    shortLink: "3209vh1c",
-    longLink: "https://facebook.com",
-    clicks: 41231,
-    timestamp: new Date("10.20.2025"),
-  },
-  {
-    shortLink: "3209vh1c",
-    longLink: "https://facebook.com",
-    clicks: 4123,
-    timestamp: new Date("10.20.2024"),
-  },
-];
+// const mockData = [
+//   {
+//     shortLink: "498c7b11",
+//     longLink: "https://github.com",
+//     clicks: 4,
+//     timestamp: new Date("11.29.2025"),
+//   },
+//   {
+//     shortLink: "139cy8h3",
+//     longLink: "https://google.com",
+//     clicks: 16,
+//     timestamp: new Date("11.28.2025"),
+//   },
+//   {
+//     shortLink: "1249c7nr",
+//     longLink: "http://youtube.com",
+//     clicks: 0,
+//     timestamp: new Date("11.20.2025"),
+//   },
+//   {
+//     shortLink: "3209vh1c",
+//     longLink: "https://facebook.com",
+//     clicks: 41231,
+//     timestamp: new Date("10.20.2025"),
+//   },
+//   {
+//     shortLink: "3209vh1c",
+//     longLink: "https://facebook.com",
+//     clicks: 4123,
+//     timestamp: new Date("10.20.2024"),
+//   },
+// ];
 
 function timeAgo(date: Date) {
   const now = new Date();
@@ -72,6 +75,27 @@ const refactorLink = (link: string) => {
   return link.substring(7);
 };
 
+const Favicon = ({ url }: { url: string }) => {
+  const [hasError, setHasError] = useState(false);
+
+  const getIconLink = (longLink: string) => {
+    return `https://favicone.com/${refactorLink(longLink)}?s=32`;
+  };
+
+  if (hasError) {
+    return <Globe className="h-8 w-8 text-gray-400" />;
+  }
+
+  return (
+    <img
+      src={getIconLink(url)}
+      alt="Website icon"
+      className="h-8 w-8"
+      onError={() => setHasError(true)}
+    />
+  );
+};
+
 export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get("page") || 1);
@@ -84,48 +108,69 @@ export default function Dashboard() {
     newParams.set("page", String(p));
     setSearchParams(newParams);
   };
-  const BASE_URL = "http://localhost:8000";
 
-  const { data = { links: [], totalCount: 0 }, isLoading } = useQuery({
+  const mapRecords = (
+    data: any
+  ): {
+    id: string;
+    shortLink: string;
+    longLink: string;
+    clicks: number;
+    timeStamp: Date;
+  }[] => {
+    return data.records.map((record: any) => ({
+      id: record.id,
+      shortLink: record.ShortUrl,
+      longLink: record.LongUrl,
+      clicks: record.total_count,
+      timeStamp: record.timeStamp,
+    }));
+  };
+
+  const {
+    data: { links, totalCount } = { links: [], totalCount: 0 },
+    isLoading,
+  } = useQuery({
     queryKey: ["links", page],
     queryFn: async () => {
       try {
-        const response = await fetch(`${BASE_URL}/links&page=${page}`);
+        const response = await fetch(`${API_URL}/links?page=${page}`);
         const data = await response.json();
+        console.log(data);
+
         return {
-          links:
-            (data.body as {
-              id: string;
-              shortLink: string;
-              longLink: string;
-              clicks: number;
-              timeStamp: Date;
-            }) || [],
-          totalCount: Number(data.headers.get("x-total-count")) || 0,
+          links: data && data.records ? mapRecords(data) : [],
+          totalCount: data ? data.links_total_count : 0,
         };
       } catch (error) {
         console.error(error);
+        return { links: [], totalCount: 0 };
       }
     },
   });
 
   return (
-    <div className="bg-muted min-h-screen w-screen">
-      <div className="bg-background border-4 rounded-2xl min-h-screen p-8 flex flex-col justify-between gap-8">
-        <h1 className="text-2xl">Dashboard</h1>
+    <div className="bg-[url(/bg.jpg)] lg:bg-[url(/bgbig.jpg)] bg-cover min-h-screen min-w-screen">
+      <div className="min-h-screen p-2 sm:p-8 flex flex-col justify-between gap-8">
+        <div className="flex justify-between">
+          <h1 className="text-2xl">Dashboard</h1>
+          <Link to="/" className="bg-white px-4 py-2 rounded-md text-muted">
+            Back to Home
+          </Link>
+        </div>
         {isLoading ? (
           <div className="w-full h-full flex justify-center items-center">
             <LoaderIcon className="animate-spin" size={64} />
           </div>
-        ) : (
-          <div className="border-2 rounded-2xl">
-            {[...mockData, ...mockData].map((link, index) => (
+        ) : links?.length ? (
+          <div className="border-2 rounded-2xl bg-white/20 backdrop-blur-lg">
+            {links?.map((link, index) => (
               <div
                 className="border-b-2 py-2 px-4 gap-2 grid grid-cols-1 sm:grid-cols-[1fr_min-content]"
                 key={index}
               >
                 <div className="flex gap-4 items-center">
-                  <img src={getIconLink(link.longLink)} className="h-8 w-8" />
+                  <Favicon url={link.longLink} />
                   <div className="flex flex-col">
                     <div
                       className="flex gap-4 items-center cursor-pointer"
@@ -135,12 +180,14 @@ export default function Dashboard() {
                         )
                       }
                     >
-                      <Link
-                        to={`shorther.com/{link.shortLink}`}
+                      <a
+                        href={`${API_URL}/${link.shortLink}`}
                         className="hover:underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        shorther.com/{link.shortLink}
-                      </Link>
+                        {API_URL}/{link.shortLink}
+                      </a>
                       <Copy size={20} />
                     </div>
                     <div className="flex gap-2 items-center">
@@ -156,18 +203,18 @@ export default function Dashboard() {
                       >
                         {refactorLink(link.longLink)}
                       </a>
-                      <span className="text-xs text-muted-foreground">
-                        {timeAgo(link.timestamp)}
-                      </span>
+                      {/* <span className="text-xs text-muted-foreground">
+                        {timeAgo(link.timeStamp)}
+                      </span> */}
                     </div>
                   </div>
                 </div>
                 <div className="flex gap-2 border-2 rounded-md px-2 py-1 items-center min-w-36 justify-between">
                   <div className="size-2.5 bg-green-500 rounded-full animate-pulse" />
                   <span className="whitespace-nowrap mono">
-                    {Intl.NumberFormat("en", { notation: "compact" }).format(
-                      link.clicks
-                    )}
+                    {Intl.NumberFormat("en", {
+                      notation: "compact",
+                    }).format(link.clicks)}
                   </span>
                   <span>clicks</span>
                   <MousePointerClickIcon size={20} />
@@ -175,13 +222,17 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
+        ) : (
+          <h3 className="text-center text-3xl font-bold">No links found</h3>
         )}
-        <CustomPagination
-          totalCount={4000}
-          pageSize={20}
-          page={page}
-          handleNewPage={handleNewPage}
-        />
+        {links.length ? (
+          <CustomPagination
+            totalCount={totalCount}
+            pageSize={10}
+            page={page}
+            handleNewPage={handleNewPage}
+          />
+        ) : null}
       </div>
     </div>
   );

@@ -3,9 +3,11 @@ import type { Route } from "./+types/home";
 import type React from "react";
 import { useState } from "react";
 import { Link } from "react-router";
+import { Link as LinkIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { API_URL, FRONTEND_URL } from "~/constants";
+import { Input } from "~/components/ui/input";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -13,8 +15,6 @@ export function meta({}: Route.MetaArgs) {
     { name: "description", content: "Welcome to PocketURL!" },
   ];
 }
-
-
 
 function InputBar() {
   const [url, setURL] = useState("");
@@ -24,9 +24,9 @@ function InputBar() {
     setURL(e.target.value);
   };
 
-  const {mutate} = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async (url: string) => {
-      console.log('abc')
+      console.log("abc");
       setIsLoading(true);
       const req = await fetch(`${API_URL}/link`, {
         method: "POST",
@@ -35,12 +35,12 @@ function InputBar() {
         },
         body: JSON.stringify({
           url,
-        })
+        }),
       });
       if (!req.ok) {
         throw new Error("Request failed");
       }
-      
+
       const body = await req.json();
       return body.shortened;
     },
@@ -56,10 +56,10 @@ function InputBar() {
           label: "Copy",
           onClick: () => {
             navigator.clipboard.writeText(`${FRONTEND_URL}/${shortened}`);
-          }
-        }
-      })
-    }
+          },
+        },
+      });
+    },
   });
 
   const handleClick = () => {
@@ -69,40 +69,46 @@ function InputBar() {
   };
 
   return (
-    <div className="border-2 mt-8 flex justify-between h-10 border-black xl:h-12 rounded-md shadow-xl">
-      <input
-        type="text"
-        placeholder="type or paste a link"
-        onChange={handleChange}
-        value={url}
-        className="p-1 w-full h-full bg-white rounded-l-md text-black"
-      />
-      <button
-        className={`rounded-r-sm h-full text-sm font-bold p-1 xl:w-36 ${isLoading ? "cursor-not-allowed bg-pink-400 text-gray-300" : "bg-pink-700 cursor-pointer"}`}
-        onClick={handleClick}
-      >
-        Shorten
-      </button>
+    <div className="flex gap-4 w-full">
+      <div className="w-full space-y-2">
+        <div className="relative w-full">
+          <LinkIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="bg-background pl-9 w-full"
+            id="url-input"
+            placeholder="https://example.com"
+            type="url"
+            onChange={handleChange}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Include https:// or http://
+        </p>
+      </div>
+      <Button onClick={handleClick}>Create</Button>
     </div>
   );
 }
 
 export default function Home() {
   return (
-    <div className="py-16 border-2 w-full h-full px-3 flex flex-col bg-[url(/bg.jpg)] lg:bg-[url(/bgbig.jpg)] bg-cover xl: items-center">
-      <div className="w-full h-full bg-white/30 p-4 pt-12 rounded-xl backdrop-blur-lg flex flex-col justify-between xl:w-4/5">
-        <div>
-          <div className="text-center text-6xl font-extrabold text-slate-50 text-shadow-black text-shadow-2xs">
-            Pocket<span className="text-pink-700">URL</span>
+    <div className="w-full h-full flex flex-col bg-[url(/bgbig.jpg)] bg-cover min-h-screen min-w-screen items-center justify-center p-4">
+      <div className="px-4 w-full h-full max-w-4xl max-h-96 bg-white/20 rounded-xl backdrop-blur-lg flex flex-col justify-around gap-16">
+        <div className="gap-16 flex flex-col">
+          <div className="flex flex-col items-center w-full">
+            <h1 className="text-center text-4xl sm:text-6xl font-extrabold text-slate-50 text-shadow-black text-shadow-2xs">
+              Pocket<span className="text-violet-500">URL</span>
+            </h1>
+            <h2 className="text-slate-200 font-bold text-sm sm:text-xl text-center">
+              No point in remembering URLs any longer
+            </h2>
           </div>
           <InputBar />
-          <h3 className="text-slate-50 font-bold text-5xl mt-16 ml-4 xl:mt-30">
-            No point in <br />{" "}
-            <span className="text-pink-700 text-shadow-sm">remembering</span>{" "}
-            <br /> URLs any longer
-          </h3>
         </div>
-        <Link to="/dashboard" className="bg-pink-700 align-center text-center py-2 rounded-xl">
+        <Link
+          to="/dashboard"
+          className="bg-violet-500 align-center text-center py-2 rounded-xl"
+        >
           SEE DASHBOARD
         </Link>
       </div>
