@@ -87,10 +87,11 @@ def create_app() -> Flask:
                 links.c.ShortUrl,
                 links.c.LongUrl,
                 func.count(links.c.ShortUrl).label("total_count"),
+                func.max(links.c.Timestamp).label("latest_click"),
             )
             .join(clicks, links.c.ShortUrl == clicks.c.ShortUrl, isouter=True)
             .offset(offset)
-            .group_by(links.c.ShortUrl)
+            .group_by(links.c.ShortUrl, links.c.LongUrl)
             .limit(cfg.ELEMENTS_PER_PAGE)
         )
 
