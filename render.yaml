@@ -18,6 +18,8 @@ projects:
               - key: CORS_ALLOW_ALL
                 value: "true"
               - key: DB_CONNECTION_STRING
+                value: ""
+
 
           - type: web
             plan: free
