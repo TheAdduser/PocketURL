@@ -4,6 +4,8 @@ set -euo pipefail
 # Simple smoke test: start the app and hit /health and /api/v1/password
 BACKEND_DIR=$(cd "$(dirname "$0")/.." && pwd)
 PROJECT_ROOT=$(cd "$BACKEND_DIR/.." && pwd)
+echo $BACKEND_DIR
+echo $PROJECT_ROOT
 cd "$PROJECT_ROOT"
 
 pip install -r "$BACKEND_DIR/requirements.txt" >/dev/null
