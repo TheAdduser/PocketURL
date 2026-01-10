@@ -2,12 +2,11 @@
 set -euo pipefail
 
 # Simple smoke test: start the app and hit /health and /api/v1/password
-CURR_DIR=$(pwd)
-PROJECT_ROOT=$(cd "$CURR_DIR/.." && pwd)
-BACKEND_DIR=$(cd "$PROJECT_ROOT/PocketURL" && pwd)
-# echo $BACKEND_DIR
-# echo $PROJECT_ROOT
-cd "$BACKEND_DIR"
+PROJECT_ROOT=$(pwd)
+BACKEND_DIR=$(cd "$PROJECT_ROOT/backend" && pwd)
+echo $BACKEND_DIR
+echo $PROJECT_ROOT
+cd "$PROJECT_ROOT"
 ls
 
 pip install -r "$BACKEND_DIR/requirements.txt" >/dev/null
