@@ -16,7 +16,3 @@ def shorten(logn_url: str) -> str:
         out.append(BASE62[r])
 
     return "".join(out)
-
-
-if __name__ == "__main__":
-    print(shorten("https://github.com"))
