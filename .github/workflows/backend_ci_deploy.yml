@@ -34,7 +34,6 @@ jobs:
         working-directory: ./backend
         run: black . --check 
 
-        ##tutumtuum
         
       - name: Run Code Linter (Flake8)
         working-directory: ./backend
@@ -45,7 +44,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: ci_tests
     environment: dev
-    # if: github.ref == 'refs/heads/dev' a
     
     steps:
       - name: Setup Node.js (dla curl)
@@ -55,19 +53,3 @@ jobs:
             
       - name: Send Deploy Request to Render DEV
         run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK }}
-
-  # deploy_prod:
-  #   name: Trigger Render Deployment (PROD)
-  #   runs-on: ubuntu-latest
-  #   needs: ci_tests
-  #   environment: prod
-  #   if: github.ref == 'refs/heads/main'
-    
-  #   steps:
-  #     - name: Setup Node.js (dla curl)
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20' 
-            
-  #     - name: Send Deploy Request to Render PROD
-  #       run: curl -X POST ${{ secrets.BACKEND_RENDER_HOOK_PROD }}
