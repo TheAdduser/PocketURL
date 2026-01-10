@@ -5,7 +5,7 @@ def singleton(cls):
     lock = threading.Lock()
     _instance_attr = "_singleton_instance"
 
-     # Ensure no name collision
+    # Ensure no name collision
     if hasattr(cls, _instance_attr):
         raise AttributeError(f"{cls.__name__} already defines '{_instance_attr}'")
 
@@ -24,6 +24,7 @@ def singleton(cls):
     # Attach the accessor
     setattr(cls, "get_instance", get_instance)
     return cls
+
 
 class Decorators:
     """Deprecated: use `@singleton` instead of `@Decorators.singleton`."""
