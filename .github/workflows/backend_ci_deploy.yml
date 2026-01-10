@@ -34,8 +34,21 @@ jobs:
         working-directory: ./backend
         run: black . --check 
 
-        ##tutumtuum
-        
+      - name: Backend Health Check
+        working-directory: ./backend
+        run: |
+          echo "Walidacja struktury plików"
+          # Sprawdzam app.py (zgodnie z Twoim zrzutem ekranu) oraz requirements.txt
+          MISSING_FILES=()
+          [ ! -f "app.py" ] && MISSING_FILES+=("app.py")
+          [ ! -f "requirements.txt" ] && MISSING_FILES+=("requirements.txt")
+          
+          if [ ${#MISSING_FILES[@]} -ne 0 ]; then
+            echo "BŁĄD: Brakuje kluczowych plików: ${MISSING_FILES[*]}"
+            exit 1
+          fi
+          echo "Struktura plików jest poprawna."
+
       - name: Run Code Linter (Flake8)
         working-directory: ./backend
         run: flake8 . 
