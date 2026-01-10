@@ -106,7 +106,8 @@ def create_app() -> Flask:
             if links_total_count is None:
                 return jsonify({"status": "Not found"}), 404
 
-            result = conn.execute(get_links_page_statement).mappings().all()
+            rows = conn.execute(get_links_page_statement).mappings().all()
+            result = [dict(row) for row in rows]
 
             if result is None:
                 return jsonify({"status": "Not found"}), 404
